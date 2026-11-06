@@ -16,11 +16,11 @@ import (
 )
 
 var (
-	noRange = mock.MatchedBy(func(s *string) bool {
-		return s == nil
+	noRange = mock.MatchedBy(func(o service.S3ObjectOptions) bool {
+		return o.Range == nil
 	})
-	anyRange = mock.MatchedBy(func(s *string) bool {
-		return s != nil
+	anyRange = mock.MatchedBy(func(o service.S3ObjectOptions) bool {
+		return o.Range != nil
 	})
 )
 
