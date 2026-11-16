@@ -41,33 +41,6 @@ COPY --from=builder /app /aws-s3-proxy
 ENTRYPOINT ["/aws-s3-proxy"]
 HEALTHCHECK --interval=5s --timeout=1s --start-period=5s --retries=3 CMD [ "/health" ]
 
-ARG BUILD_VERSION
-ARG BUILD_DATE
-ARG BUILD_REF
-LABEL maintainer="Patrick Domack (patrickdk@patrickdk.com)" \
-  Description="aws s3 proxy." \
-  org.label-schema.schema-version="1.0" \
-  org.label-schema.build-date="${BUILD_DATE}" \
-  org.label-schema.name="aws-s3-proxy" \
-  org.label-schema.description="AWS S3 proxy with indexing" \
-  org.label-schema.url="https://github.com/patrickdk77/aws-s3-proxy" \
-  org.label-schema.usage="https://github.com/patrickdk77/aws-s3-proxy/tree/master/README.md" \
-  org.label-schema.vcs-url="https://github.com/patrickdk77/aws-s3-proxy" \
-  org.label-schema.vcs-ref="${BUILD_REF}" \
-  org.label-schema.version="${BUILD_VERSION}" \
-  org.opencontainers.url="https://github.com/patrickdk77/aws-s3-proxy" \
-  org.opencontainers.documentation="https://github.com/patrickdk77/aws-s3-proxy/tree/master/README.md" \
-  org.opencontainers.source="https://github.com/patrickdk77/aws-s3-proxy" \
-  org.opencontainers.revision="${BUILD_REF}" \
-  org.opencontainers.image.authors="Patrick Domack (patrickdk@patrickdk.com)" \
-  org.opencontainers.image.created="${BUILD_DATE}" \
-  org.opencontainers.image.title="aws-s3-proxy" \
-  org.opencontainers.image.description="AWS S3 Proxy with indexing" \
-  org.opencontainers.image.version="${BUILD_VERSION}" \
-  org.opencontainers.image.licenses="MIT" \
-  org.opencontainers.image.ref.name="aws-s3-proxy" \
-  version="${BUILD_VERSION}"
-
 FROM base AS dist-lambda
 COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:1.1.0 /lambda-adapter /opt/extensions/lambda-adapter
 
