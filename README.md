@@ -50,7 +50,10 @@ MAX_IDLE_CONNECTIONS      | Allowed number of idle connections to the S3 storage
 IDLE_CONNECTION_TIMEOUT   | Allowed timeout to the S3 storage.                |          | 10
 DISABLE_COMPRESSION       | If true will pass encoded content through as-is.  |          | true
 INSECURE_TLS              | If true it will skip cert checks                  |          | false
+JWKS_URI                  | Endpoint for fetching JWON Web Key Set. Takes precedence over JWT_SECRET_KEY | | -
 JWT_SECRET_KEY            | JSON Web Token secret key to athenticate requests |          | -
+JWT_ISSUER                | Expected issuer of JSON Web Token (`iss` claim)   |          | -
+JWT_AUDIENCE              | Expected audience of JSON Web Token (`aud` claim) |          | -
 JWT_USER_FIELD            | JSON Web Token field to put in username for logs  |          | -
 JWT_HEADER                | JSON Web Token header to use, instead of Authorization, aka Cf-Access-Jwt-Assertion |          | -
 SPA                       | Signle Page Application - If true server will return index document content on 404 error (like `try_files $uri $uri/ /index.html;` in nginx) |          | false
