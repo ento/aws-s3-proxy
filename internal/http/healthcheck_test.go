@@ -36,7 +36,7 @@ func (c *closeTracker) Close() error {
 }
 
 func (f *fakeAWS) S3get(_ context.Context, _, key string,
-	_ *string) (*s3.GetObjectOutput, error) {
+	_ service.S3ObjectOptions) (*s3.GetObjectOutput, error) {
 	f.key = key
 	if f.err != nil {
 		return nil, f.err
@@ -46,7 +46,7 @@ func (f *fakeAWS) S3get(_ context.Context, _, key string,
 }
 
 func (f *fakeAWS) S3head(context.Context, string, string,
-	*string) (*s3.HeadObjectOutput, error) {
+	service.S3ObjectOptions) (*s3.HeadObjectOutput, error) {
 	return nil, nil
 }
 

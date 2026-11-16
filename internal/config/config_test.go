@@ -42,7 +42,10 @@ func defaultConfig() *config {
 		IdleConnTimeout:      time.Duration(10) * time.Second,
 		DisableCompression:   true,
 		InsecureTLS:          false,
+		JwksURI:              "",
 		JwtSecretKey:         "",
+		JwtIssuer:            "",
+		JwtAudience:          "",
 		SPA:                  false,
 		WhiteListIPRanges:    make([]*net.IPNet, 0),
 		ContentType:          "",
@@ -73,6 +76,9 @@ func TestChangeDefaults(t *testing.T) {
 	os.Setenv("METRICS_PATH", "/metrics")
 	os.Setenv("VERSION_PATH", "/version")
 	os.Setenv("INSECURE_TLS", "t")
+	os.Setenv("JWKS_URI", "https://example.com/jwks")
+	os.Setenv("JWT_ISSUER", "test-iss")
+	os.Setenv("JWT_AUDIENCE", "test-aud")
 	os.Setenv("SPA", "TRUE")
 	os.Setenv("WHITELIST_IP_RANGES", "10.0.0.0/24,198.5.5.3")
 	os.Setenv("CONTENT_TYPE", "application/octet-stream")
@@ -93,6 +99,9 @@ func TestChangeDefaults(t *testing.T) {
 	expected.IdleConnTimeout = time.Duration(60) * time.Second
 	expected.DisableCompression = false
 	expected.InsecureTLS = true
+	expected.JwksURI = "https://example.com/jwks"
+	expected.JwtIssuer = "test-iss"
+	expected.JwtAudience = "test-aud"
 	expected.SPA = true
 	expected.WhiteListIPRanges = make([]*net.IPNet, 0, 2)
 	for _, subStr := range []string{"10.0.0.0/24", "198.5.5.3/32"} {

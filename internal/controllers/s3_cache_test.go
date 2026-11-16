@@ -23,16 +23,16 @@ type MockAWS struct {
 	mock.Mock
 }
 
-func (m *MockAWS) S3get(ctx context.Context, bucket, key string, rangeHeader *string) (*s3.GetObjectOutput, error) {
-	args := m.Called(ctx, bucket, key, rangeHeader)
+func (m *MockAWS) S3get(ctx context.Context, bucket, key string, options service.S3ObjectOptions) (*s3.GetObjectOutput, error) {
+	args := m.Called(ctx, bucket, key, options)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*s3.GetObjectOutput), args.Error(1)
 }
 
-func (m *MockAWS) S3head(ctx context.Context, bucket, key string, rangeHeader *string) (*s3.HeadObjectOutput, error) {
-	args := m.Called(ctx, bucket, key, rangeHeader)
+func (m *MockAWS) S3head(ctx context.Context, bucket, key string, options service.S3ObjectOptions) (*s3.HeadObjectOutput, error) {
+	args := m.Called(ctx, bucket, key, options)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -70,7 +70,7 @@ func TestAwsS3_Caching(t *testing.T) {
 	cacheOnce = *new(sync.Once)
 
 	// Test Case 1: Cache Miss
-	mockAWS.On("S3get", mock.Anything, "bucket", "/file.txt", (*string)(nil)).Return(&s3.GetObjectOutput{
+	mockAWS.On("S3get", mock.Anything, "bucket", "/file.txt", noRange).Return(&s3.GetObjectOutput{
 		Body:          io.NopCloser(bytes.NewBufferString("content")),
 		ContentLength: aws.Int64(7),
 		ContentType:   aws.String("text/plain"),
@@ -115,7 +115,7 @@ func TestAwsS3_CacheMaxAge(t *testing.T) {
 	cacheOnce = *new(sync.Once)
 
 	// Response with Cache-Control: max-age=1
-	mockAWS.On("S3get", mock.Anything, "bucket", "/max-age.txt", (*string)(nil)).Return(&s3.GetObjectOutput{
+	mockAWS.On("S3get", mock.Anything, "bucket", "/max-age.txt", noRange).Return(&s3.GetObjectOutput{
 		Body:          io.NopCloser(bytes.NewBufferString("expires quickly")),
 		ContentLength: aws.Int64(15),
 		ContentType:   aws.String("text/plain"),
@@ -140,7 +140,7 @@ func TestAwsS3_CacheMaxAge(t *testing.T) {
 	time.Sleep(1100 * time.Millisecond)
 
 	// 4. Request after expiry (Cache Miss again)
-	mockAWS.On("S3get", mock.Anything, "bucket", "/max-age.txt", (*string)(nil)).Return(&s3.GetObjectOutput{
+	mockAWS.On("S3get", mock.Anything, "bucket", "/max-age.txt", noRange).Return(&s3.GetObjectOutput{
 		Body:          io.NopCloser(bytes.NewBufferString("new content")),
 		ContentLength: aws.Int64(11),
 		ContentType:   aws.String("text/plain"),
@@ -173,7 +173,7 @@ func TestAwsS3_CacheHEAD(t *testing.T) {
 	cacheOnce = *new(sync.Once)
 
 	// 1. Initial GET Request (Cache Miss)
-	mockAWS.On("S3get", mock.Anything, "bucket", "/head-cache.txt", (*string)(nil)).Return(&s3.GetObjectOutput{
+	mockAWS.On("S3get", mock.Anything, "bucket", "/head-cache.txt", noRange).Return(&s3.GetObjectOutput{
 		Body:          io.NopCloser(bytes.NewBufferString("head content")),
 		ContentLength: aws.Int64(12),
 		ContentType:   aws.String("text/plain"),
@@ -220,7 +220,7 @@ func TestAwsS3_CacheMaxFileSize(t *testing.T) {
 	largeSize := int64(10*1024*1024 + 1)
 
 	// 1. Initial Request (Should not cache)
-	mockAWS.On("S3get", mock.Anything, "bucket", "/large.txt", (*string)(nil)).Return(&s3.GetObjectOutput{
+	mockAWS.On("S3get", mock.Anything, "bucket", "/large.txt", noRange).Return(&s3.GetObjectOutput{
 		Body:          io.NopCloser(bytes.NewReader([]byte("small body"))),
 		ContentLength: aws.Int64(largeSize),
 		ContentType:   aws.String("text/plain"),
@@ -232,7 +232,7 @@ func TestAwsS3_CacheMaxFileSize(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rr.Code)
 
 	// 2. Second Request (Should trigger S3get again because it wasn't cached)
-	mockAWS.On("S3get", mock.Anything, "bucket", "/large.txt", (*string)(nil)).Return(&s3.GetObjectOutput{
+	mockAWS.On("S3get", mock.Anything, "bucket", "/large.txt", noRange).Return(&s3.GetObjectOutput{
 		Body:          io.NopCloser(bytes.NewReader([]byte("small body"))),
 		ContentLength: aws.Int64(largeSize),
 		ContentType:   aws.String("text/plain"),

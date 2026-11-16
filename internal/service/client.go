@@ -3,16 +3,25 @@ package service
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/patrickdk77/aws-s3-proxy/internal/config"
 )
 
+type S3ObjectOptions struct {
+	IfMatch           *string
+	IfModifiedSince   *time.Time
+	IfNoneMatch       *string
+	IfUnmodifiedSince *time.Time
+	Range             *string
+}
+
 // AWS is a service to interact with original AWS services
 type AWS interface {
-	S3get(ctx context.Context, bucket, key string, rangeHeader *string) (*s3.GetObjectOutput, error)
-	S3head(ctx context.Context, bucket, key string, rangeHeader *string) (*s3.HeadObjectOutput, error)
+	S3get(ctx context.Context, bucket, key string, options S3ObjectOptions) (*s3.GetObjectOutput, error)
+	S3head(ctx context.Context, bucket, key string, options S3ObjectOptions) (*s3.HeadObjectOutput, error)
 	S3exists(ctx context.Context, bucket, key string) bool
 	S3listObjects(ctx context.Context, bucket, prefix string) (*s3.ListObjectsV2Output, error)
 }

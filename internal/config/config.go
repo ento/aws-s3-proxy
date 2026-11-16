@@ -56,7 +56,10 @@ type config struct { // nolint
 	IdleConnTimeout      time.Duration // IDLE_CONNECTION_TIMEOUT
 	DisableCompression   bool          // DISABLE_COMPRESSION
 	InsecureTLS          bool          // Disables TLS validation on request endpoints.
+	JwksURI              string        // JWKS_URI
 	JwtSecretKey         string        // JWT_SECRET_KEY
+	JwtIssuer            string        // JWT_ISSUER
+	JwtAudience          string        // JWT_AUDIENCE
 	JwtUserField         string        // JWT_USER_FIELD
 	JwtHeader            string        // JWT_HEADER
 	SPA                  bool          // SPA
@@ -240,7 +243,10 @@ func Setup() {
 		IdleConnTimeout:      idleConnTimeout,
 		DisableCompression:   disableCompression,
 		InsecureTLS:          insecureTLS,
+		JwksURI:              os.Getenv("JWKS_URI"),
 		JwtSecretKey:         os.Getenv("JWT_SECRET_KEY"),
+		JwtIssuer:            os.Getenv("JWT_ISSUER"),
+		JwtAudience:          os.Getenv("JWT_AUDIENCE"),
 		JwtUserField:         os.Getenv("JWT_USER_FIELD"),
 		JwtHeader:            os.Getenv("JWT_HEADER"),
 		SPA:                  SPA,

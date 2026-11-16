@@ -4,7 +4,7 @@ Added multiarch support to builds.
 
 ## Description
 
-This is a reverse proxy for AWS S3, which is able to provide basic authentication as well.  
+This is a reverse proxy for AWS S3, which is able to provide basic authentication as well.
 You don't need to configure a Bucket for `Website Hosting`.
 
 http://this-proxy.com/access/ -> s3://bucket/access/index.html
@@ -27,8 +27,8 @@ DIRECTORY_LISTINGS_FORMAT | Configures directory listing to be `html` (spider pa
 DIRECTORY_LISTINGS_CHECK_INDEX | Check for `INDEX_DOCUMENT` in the folder before listing files |       | false
 HTTP_CACHE_CONTROL        | Overrides S3's HTTP `Cache-Control` header.       |          | S3 Object metadata
 HTTP_EXPIRES              | Overrides S3's HTTP `Expires` header.             |          | S3 Object metadata
-BASIC_AUTH_USER           | User for basic authentication. Space seperated list |          | -
-BASIC_AUTH_PASS           | Password for basic authentication. Space seperated list |          | -
+BASIC_AUTH_USER           | User for basic authentication. Space separated list |          | -
+BASIC_AUTH_PASS           | Password for basic authentication. Space separated list |          | -
 SSL_CERT_PATH             | TLS: cert.pem file path.                          |          | -
 SSL_KEY_PATH              | TLS: key.pem file path.                           |          | -
 CORS_ALLOW_ORIGIN         | CORS: a URI that may access the resource.         |          | -
@@ -43,21 +43,24 @@ STRIP_PATH                | Strip path prefix.                                | 
 CONTENT_ENCODING          | Compress responses when the client accepts zstd, gzip or deflate. If it accepts several, the proxy picks zstd first, then gzip. The proxy compresses the first 128 KB as a test and sends the response compressed only if that saves at least 5%. It never compresses HEAD responses. |          | true
 HEALTHCHECK_PATH          | Health check path, e.g. /healthz. Fetches AWS_S3_KEY_PREFIX + path from S3. Returns 200 when S3 answers, even if the object is missing, and 500 when it does not. |          | -
 HEALTHCHECKER_PATH        | Used by docker healthcheck script, if different from HEALTHCHECK_PATH |          | -
-METRICS_PATH              | prometheus statistics /metrics                    |          | -
+METRICS_PATH              | Prometheus statistics /metrics                    |          | -
 VERSION_PATH              | version info of proxy /version                    |          | -
 GET_ALL_PAGES_IN_DIR      | If true will make several calls to get all pages of destination directory | | false
 MAX_IDLE_CONNECTIONS      | Allowed number of idle connections to the S3 storage |       | 150
 IDLE_CONNECTION_TIMEOUT   | Allowed timeout to the S3 storage.                |          | 10
 DISABLE_COMPRESSION       | If true will pass encoded content through as-is.  |          | true
 INSECURE_TLS              | If true it will skip cert checks                  |          | false
-JWT_SECRET_KEY            | JSON Web Token secret key to athenticate requests |          | -
+JWKS_URI                  | Endpoint for fetching JWON Web Key Set. Takes precedence over JWT_SECRET_KEY | | -
+JWT_SECRET_KEY            | JSON Web Token secret key to authenticate requests |          | -
+JWT_ISSUER                | Expected issuer of JSON Web Token (`iss` claim)   |          | -
+JWT_AUDIENCE              | Expected audience of JSON Web Token (`aud` claim) |          | -
 JWT_USER_FIELD            | JSON Web Token field to put in username for logs  |          | -
 JWT_HEADER                | JSON Web Token header to use, instead of Authorization, aka Cf-Access-Jwt-Assertion |          | -
-SPA                       | Signle Page Application - If true server will return index document content on 404 error (like `try_files $uri $uri/ /index.html;` in nginx) |          | false
-WHITELIST_IP_RANGES       | commma separated list of IPs and IP ranges.       |          | -
+SPA                       | Single Page Application - If true server will return index document content on 404 error (like `try_files $uri $uri/ /index.html;` in nginx) |          | false
+WHITELIST_IP_RANGES       | Comma-separated list of IPs and IP ranges.       |          | -
 CONTENT_TYPE              | Override the default Content-Type response header |          | -
 CONTENT_DISPOSITION       | Override the default Content-Disposition response header |          | -
-USERNAME_HEADER           | Username Header name, for cloudflare Cf-Access-Authenticated-User-Email |          | -
+USERNAME_HEADER           | Username Header name, for Cloudflare Cf-Access-Authenticated-User-Email |          | -
 SORT                      | Sorts file listing (datedesc, dateasc, fileasc, filedesc, numberasc, numberdesc) |          | fileasc
 POST_TIMEOUT              | Timeout for reads (uploads) in seconds            |          | 60
 GET_TIMEOUT               | Timeout for writes, responses, in seconds. On SIGTERM the proxy waits this long for running downloads to finish. |          | 600

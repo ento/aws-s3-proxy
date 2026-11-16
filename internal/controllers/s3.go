@@ -62,10 +62,30 @@ func AwsS3(w http.ResponseWriter, r *http.Request) {
 		path = strings.TrimPrefix(path, c.StripPath)
 	}
 
+	objectOptions := service.S3ObjectOptions{}
+	// If-Match header
+	if candidate := r.Header.Get("If-Match"); !typeutils.IsZero(candidate) {
+		objectOptions.IfMatch = aws.String(candidate)
+	}
+	// If-Modified-Since header
+	if candidate := r.Header.Get("If-Modified-Since"); !typeutils.IsZero(candidate) {
+		if ifModifiedSince, err := http.ParseTime(candidate); err == nil {
+			objectOptions.IfModifiedSince = &ifModifiedSince
+		}
+	}
+	// If-None-Match header
+	if candidate := r.Header.Get("If-None-Match"); !typeutils.IsZero(candidate) {
+		objectOptions.IfNoneMatch = aws.String(candidate)
+	}
+	// If-Unmodified-Since header
+	if candidate := r.Header.Get("If-Unmodified-Since"); !typeutils.IsZero(candidate) {
+		if ifUnmodifiedSince, err := http.ParseTime(candidate); err == nil {
+			objectOptions.IfUnmodifiedSince = &ifUnmodifiedSince
+		}
+	}
 	// Range header
-	var rangeHeader *string
 	if candidate := r.Header.Get("Range"); !typeutils.IsZero(candidate) {
-		rangeHeader = aws.String(candidate)
+		objectOptions.Range = aws.String(candidate)
 	}
 
 	client := NewClientFunc(r.Context(), aws.String(config.Config.AwsRegion))
@@ -82,7 +102,7 @@ func AwsS3(w http.ResponseWriter, r *http.Request) {
 		path = aws.ToString(replaced) + path[end:]
 	}
 
-	if c.CacheSize > 0 && c.CacheTTL > 0 && rangeHeader == nil {
+	if c.CacheSize > 0 && c.CacheTTL > 0 && objectOptions.Range == nil {
 		cacheOnce.Do(func() {
 			httpCache = ccache.New(ccache.Configure[cachedResponse]().MaxSize(c.CacheSize))
 		})
@@ -132,7 +152,7 @@ func AwsS3(w http.ResponseWriter, r *http.Request) {
 		path += c.IndexDocument
 	}
 
-	useCache := httpCache != nil && rangeHeader == nil
+	useCache := httpCache != nil && objectOptions.Range == nil
 
 	switch r.Method {
 	case "GET":
@@ -153,7 +173,7 @@ func AwsS3(w http.ResponseWriter, r *http.Request) {
 			hit.Body = io.NopCloser(body)
 			obj = &hit
 		} else {
-			obj, err = client.S3get(r.Context(), c.S3Bucket, c.S3KeyPrefix+path, rangeHeader)
+			obj, err = client.S3get(r.Context(), c.S3Bucket, c.S3KeyPrefix+path, objectOptions)
 			metrics.UpdateS3Reads(err, metrics.GetObjectAction, metrics.ProxySource)
 			if err != nil {
 				code, message := toHTTPError(err)
@@ -164,7 +184,7 @@ func AwsS3(w http.ResponseWriter, r *http.Request) {
 				}
 				var ierr error
 				obj, ierr = client.S3get(r.Context(),
-					c.S3Bucket, key, rangeHeader)
+					c.S3Bucket, key, objectOptions)
 				if ierr != nil {
 					code, msg := toHTTPError(ierr)
 					http.Error(w, msg, code)
@@ -199,7 +219,7 @@ func AwsS3(w http.ResponseWriter, r *http.Request) {
 			val := item.Value()
 			obj = val.GetObjectOutput
 		} else {
-			obj, err = client.S3head(r.Context(), c.S3Bucket, c.S3KeyPrefix+path, rangeHeader)
+			obj, err = client.S3head(r.Context(), c.S3Bucket, c.S3KeyPrefix+path, objectOptions)
 			// metrics.UpdateS3Reads(err, metrics.GetObjectAction, metrics.ProxySource)
 			if err != nil {
 				code, message := toHTTPError(err)
@@ -210,7 +230,7 @@ func AwsS3(w http.ResponseWriter, r *http.Request) {
 				}
 				var ierr error
 				obj, ierr = client.S3head(r.Context(),
-					c.S3Bucket, key, rangeHeader)
+					c.S3Bucket, key, objectOptions)
 				if ierr != nil {
 					code, msg := toHTTPError(ierr)
 					http.Error(w, msg, code)
@@ -301,7 +321,7 @@ func symlinkEnd(path string) int {
 }
 
 func replacePathWithSymlink(r *http.Request, client service.AWS, bucket, symlinkPath string) (*string, error) {
-	obj, err := client.S3get(r.Context(), bucket, symlinkPath, nil)
+	obj, err := client.S3get(r.Context(), bucket, symlinkPath, service.S3ObjectOptions{})
 	metrics.UpdateS3Reads(err, metrics.GetObjectAction, metrics.ProxySource)
 	if err != nil {
 		return nil, err
