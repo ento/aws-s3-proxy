@@ -11,7 +11,7 @@ require (
 	github.com/go-openapi/swag/typeutils v0.29.2
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/karlseguin/ccache/v3 v3.0.8
-	github.com/klauspost/compress v1.20.1
+	github.com/klauspost/compress v1.20.4
 	github.com/prometheus/client_golang v1.24.1
 	github.com/stretchr/testify v1.12.1
 )
